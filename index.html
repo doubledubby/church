@@ -6,14 +6,54 @@
     <title>Churches in Boston</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <style>
-        #map {
+        /* Layout styling */
+        body {
+            margin: 0;
+            display: flex;
             height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            width: 50%;
+            height: 100%;
+        }
+        #data-list {
+            width: 50%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #f8f9fa;
+        }
+        .church-card {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .church-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.2em;
+        }
+        .church-card p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #555;
         }
     </style>
 </head>
 <body>
-    <h1 style="text-align:center;">Churches in Boston</h1>
+    <!-- Map Container -->
     <div id="map"></div>
+
+    <!-- Scrollable Data List -->
+    <div id="data-list">
+        <h2>Churches in Boston</h2>
+        <!-- Church data will be populated here dynamically -->
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
@@ -23,17 +63,30 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Load and display churches from CSV
+        // Load churches data from CSV
         const csvFilePath = 'churches.csv'; // Path to your CSV file
         Papa.parse(csvFilePath, {
             download: true,
             header: true,
             complete: (result) => {
-                result.data.forEach(church => {
+                const churchData = result.data;
+
+                // Populate the map and list
+                churchData.forEach(church => {
                     if (church.latitude && church.longitude) {
+                        // Add marker to the map
                         L.marker([parseFloat(church.latitude), parseFloat(church.longitude)])
                             .addTo(map)
                             .bindPopup(`<b>${church.name}</b><br>${church.address}`);
+
+                        // Add church info to the scrollable list
+                        const churchCard = document.createElement('div');
+                        churchCard.className = 'church-card';
+                        churchCard.innerHTML = `
+                            <h3>${church.name}</h3>
+                            <p>${church.address}</p>
+                        `;
+                        document.getElementById('data-list').appendChild(churchCard);
                     }
                 });
             },
