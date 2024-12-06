@@ -17,7 +17,7 @@
             width: 50%;
             height: 100%;
         }
-        #data-list {
+        #data-container {
             width: 50%;
             height: 100%;
             overflow-y: auto;
@@ -25,22 +25,23 @@
             box-sizing: border-box;
             background-color: #f8f9fa;
         }
-        .church-card {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
             background-color: #fff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        .church-card h3 {
-            margin: 0 0 5px 0;
-            font-size: 1.2em;
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border: 1px solid #ddd;
         }
-        .church-card p {
-            margin: 0;
-            font-size: 0.9em;
-            color: #555;
+        th {
+            background-color: #f1f1f1;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
     </style>
 </head>
@@ -48,10 +49,22 @@
     <!-- Map Container -->
     <div id="map"></div>
 
-    <!-- Scrollable Data List -->
-    <div id="data-list">
+    <!-- Scrollable Table Container -->
+    <div id="data-container">
         <h2>Churches in Boston</h2>
-        <!-- Church data will be populated here dynamically -->
+        <table id="church-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be dynamically populated here -->
+            </tbody>
+        </table>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
@@ -71,22 +84,26 @@
             complete: (result) => {
                 const churchData = result.data;
 
-                // Populate the map and list
+                // Populate the map and table
                 churchData.forEach(church => {
                     if (church.latitude && church.longitude) {
+                        const lat = parseFloat(church.latitude);
+                        const lon = parseFloat(church.longitude);
+
                         // Add marker to the map
-                        L.marker([parseFloat(church.latitude), parseFloat(church.longitude)])
+                        L.marker([lat, lon])
                             .addTo(map)
                             .bindPopup(`<b>${church.name}</b><br>${church.address}`);
 
-                        // Add church info to the scrollable list
-                        const churchCard = document.createElement('div');
-                        churchCard.className = 'church-card';
-                        churchCard.innerHTML = `
-                            <h3>${church.name}</h3>
-                            <p>${church.address}</p>
+                        // Add row to the table
+                        const tableRow = document.createElement('tr');
+                        tableRow.innerHTML = `
+                            <td>${church.name}</td>
+                            <td>${church.address}</td>
+                            <td>${lat}</td>
+                            <td>${lon}</td>
                         `;
-                        document.getElementById('data-list').appendChild(churchCard);
+                        document.querySelector('#church-table tbody').appendChild(tableRow);
                     }
                 });
             },
