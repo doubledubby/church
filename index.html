@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Churches in Boston</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;">Churches in Boston</h1>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([42.3601, -71.0589], 13); // Boston center
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Load and display churches from CSV
+        const csvFilePath = 'churches.csv'; // Path to your CSV file
+        Papa.parse(csvFilePath, {
+            download: true,
+            header: true,
+            complete: (result) => {
+                result.data.forEach(church => {
+                    if (church.latitude && church.longitude) {
+                        L.marker([parseFloat(church.latitude), parseFloat(church.longitude)])
+                            .addTo(map)
+                            .bindPopup(`<b>${church.name}</b><br>${church.address}`);
+                    }
+                });
+            },
+            error: (error) => {
+                console.error('Error loading CSV:', error);
+            }
+        });
+    </script>
+</body>
+</html>
