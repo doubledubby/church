@@ -101,6 +101,9 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
+        // Default image URL
+        const defaultImageUrl = 'https://static.vecteezy.com/system/resources/previews/002/261/111/non_2x/christian-cross-icon-symbol-sign-isolate-on-white-background-illustration-eps-10-free-vector.jpg';
+
         // Cache for storing church data
         let churchData = [];
 
@@ -141,10 +144,25 @@
                         const lat = parseFloat(church.latitude);
                         const lon = parseFloat(church.longitude);
 
+                        // Determine the image to use for the popup
+                        const imageUrl = church.imageUrl && church.imageUrl.trim() !== '' 
+                            ? church.imageUrl 
+                            : defaultImageUrl;
+
                         // Add marker to the map
-                        L.marker([lat, lon])
-                            .addTo(map)
-                            .bindPopup(`<b>${church.name}</b><br>${church.address}`);
+                        const marker = L.marker([lat, lon]).addTo(map);
+
+                        // Add popup with image and details
+                        const popupContent = `
+                            <div style="display: flex; align-items: center;">
+                                <img src="${church.imageUrl}" alt="Church Image" style="width: 80px; height: 80px; object-fit: cover; margin-right: 10px;" />
+                                <div>
+                                    <b>${church.name}</b><br>
+                                    ${church.address}
+                                </div>
+                            </div>
+                        `;
+                        marker.bindPopup(popupContent);
                     }
                 });
 
