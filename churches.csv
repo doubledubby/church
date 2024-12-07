@@ -1,9 +1,9 @@
-name,address,latitude,longitude
-Old North Church,193 Salem St,42.366285,-71.054636
-Trinity Church,206 Clarendon St,42.350266,-71.075356
-Park Street Church,1 Park St,42.356980,-71.062418
-Antioch Baptist Church, 16 Garden St, 42.3772, -71.123
-Aletheia Church Cambridge, 85 Bishop Allen Dr, 42.36589, -71.10135
-Old South Church, 645 Boylston St, 42.35261, -71.07907
-Grace City Church, 1187 Beacon St, 42.34576, -71.10636
-Boston Church Back Bay, 180 Berkeley St, 42.35032, -71.07056
+name,address,latitude,longitude, url, denomination
+Old North Church,193 Salem St,42.366285,-71.054636, https://oldnorth.com, Denomation A 
+Trinity Church,206 Clarendon St,42.350266,-71.075356, https://trinitychurchboston.org, Denomination B
+Park Street Church,1 Park St,42.356980,-71.062418, https://parkstreet.org, Denomination C
+Antioch Baptist Church, 16 Garden St, 42.3772, -71.123, https://antiochboston.org, Southern Baptist Convention
+Aletheia Church Cambridge, 85 Bishop Allen Dr, 42.36589, -71.10135, https://aletheia.org, Denomation A
+Old South Church, 645 Boylston St, 42.35261, -71.07907, https://oldsouth.org, Denomation B
+Grace City Church, 1187 Beacon St, 42.34576, -71.10636, https://gracecityboston.org, Denomation C
+Boston Church Back Bay, 180 Berkeley St, 42.35032, -71.07056, https://bostonchurch.org, Denomation A

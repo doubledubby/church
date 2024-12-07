@@ -25,6 +25,14 @@
             box-sizing: border-box;
             background-color: #f8f9fa;
         }
+        #search-bar {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -33,20 +41,31 @@
         th, td {
             text-align: left;
             padding: 8px;
-            border: 1px solid #ddd;
         }
         th {
             background-color: #f1f1f1;
             position: sticky;
             top: 0;
         }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
+        td {
+            border-bottom: 1px solid #ddd;
+        }
+        /* Hide latitude and longitude columns */
+        .hide-column {
+            display: none;
         }
         /* Hover effect for rows */
         tr:hover {
             background-color: #e6f7ff; /* Light blue color */
             cursor: pointer;
+        }
+        /* Link styling */
+        a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -56,14 +75,15 @@
 
     <!-- Scrollable Table Container -->
     <div id="data-container">
+        <input type="text" id="search-bar" placeholder="Search by church name..." />
         <h2>Churches in Boston</h2>
         <table id="church-table">
             <thead>
                 <tr>
                     <th>Name</th>
                     <th>Address</th>
-                    <th>Latitude</th>
-                    <th>Longitude</th>
+                    <th class="hide-column">Latitude</th>
+                    <th class="hide-column">Longitude</th>
                 </tr>
             </thead>
             <tbody>
@@ -81,15 +101,41 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
+        // Cache for storing church data
+        let churchData = [];
+
+        // Populate the table with filtered data
+        const populateTable = (filter = '') => {
+            const tableBody = document.querySelector('#church-table tbody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            // Filter the data based on the search input
+            const filteredData = churchData.filter(church => 
+                church.name.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            // Add filtered rows to the table
+            filteredData.forEach(church => {
+                const tableRow = document.createElement('tr');
+                tableRow.innerHTML = `
+                    <td><a href="${church.url}" target="_blank">${church.name}</a></td>
+                    <td>${church.address}</td>
+                    <td class="hide-column">${church.latitude}</td>
+                    <td class="hide-column">${church.longitude}</td>
+                `;
+                tableBody.appendChild(tableRow);
+            });
+        };
+
         // Load churches data from CSV
         const csvFilePath = 'churches.csv'; // Path to your CSV file
         Papa.parse(csvFilePath, {
             download: true,
             header: true,
             complete: (result) => {
-                const churchData = result.data;
+                churchData = result.data;
 
-                // Populate the map and table
+                // Add markers to the map and populate the table initially
                 churchData.forEach(church => {
                     if (church.latitude && church.longitude) {
                         const lat = parseFloat(church.latitude);
@@ -99,22 +145,22 @@
                         L.marker([lat, lon])
                             .addTo(map)
                             .bindPopup(`<b>${church.name}</b><br>${church.address}`);
-
-                        // Add row to the table
-                        const tableRow = document.createElement('tr');
-                        tableRow.innerHTML = `
-                            <td>${church.name}</td>
-                            <td>${church.address}</td>
-                            <td>${lat}</td>
-                            <td>${lon}</td>
-                        `;
-                        document.querySelector('#church-table tbody').appendChild(tableRow);
                     }
                 });
+
+                // Populate the table initially with all data
+                populateTable();
             },
             error: (error) => {
                 console.error('Error loading CSV:', error);
             }
+        });
+
+        // Add event listener to the search bar
+        const searchBar = document.getElementById('search-bar');
+        searchBar.addEventListener('input', () => {
+            const searchTerm = searchBar.value;
+            populateTable(searchTerm);
         });
     </script>
 </body>
