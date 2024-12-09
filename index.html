@@ -13,10 +13,90 @@
             height: 100vh;
             font-family: Arial, sans-serif;
         }
-        #map {
+        #map-and-calendar {
+            position: relative;
             width: 50%;
             height: 100%;
         }
+
+        #map-container, #calendar-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #calendar {
+            display: grid;
+            grid-template-columns: 1fr 6fr;
+            gap: 10px;
+            height: 100%;
+            margin: 20px;
+        }
+
+        .time-column {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-right: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            padding-right: 10px;
+        }
+
+        .time-row {
+            height: 50px;
+            border-bottom: 1px solid #ccc;
+            padding-top: 5px;
+        }
+
+        .day-columns {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            border-left: 1px solid #ccc;
+            position: relative;
+        }
+
+        .day-column {
+            border-right: 1px solid #ccc;
+            height: calc(50px * 14);
+            position: relative;
+            background-color: #f9f9f9;
+        }
+
+        .event-card {
+            position: absolute;
+            left: 5px;
+            right: 5px;
+            background-color: #ffcccb;
+            border: 1px solid #ff8a8a;
+            border-radius: 4px;
+            padding: 5px;
+            font-size: 12px;
+            text-align: center;
+            color: #333;
+        }
+
+        #toggle-view-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #toggle-view-btn:hover {
+            background-color: #0056b3;
+        }
+
         #data-container {
             width: 50%;
             height: 100%;
@@ -70,9 +150,43 @@
     </style>
 </head>
 <body>
-    <!-- Map Container -->
-    <div id="map"></div>
-
+    <!-- Map and Calendar Container -->
+    <div id="map-and-calendar">
+        <div id="map-container"></div>
+        <div id="calendar-container" style="display: none;">
+            <div id="calendar">
+                <div class="time-column">
+                    <div class="time-row">8 AM</div>
+                    <div class="time-row">9 AM</div>
+                    <div class="time-row">10 AM</div>
+                    <div class="time-row">11 AM</div>
+                    <div class="time-row">noon</div>
+                    <div class="time-row">1 PM</div>
+                    <div class="time-row">2 PM</div>
+                    <div class="time-row">3 PM</div>
+                    <div class="time-row">4 PM</div>
+                    <div class="time-row">5 PM</div>
+                    <div class="time-row">6 PM</div>
+                    <div class="time-row">7 PM</div>
+                    <div class="time-row">8 PM</div>
+                    <div class="time-row">9 PM</div>
+                </div>
+                <div class="day-columns">
+                    <div class="day-column">Mon</div>
+                    <div class="day-column">Tue</div>
+                    <div class="day-column">Wed</div>
+                    <div class="day-column">Thu</div>
+                    <div class="day-column">Fri</div>
+                    <div class="day-column">Sat</div>
+                    <div class="day-column">Sun</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toggle Button -->
+    <button id="toggle-view-btn">Toggle View</button>
+    
     <!-- Scrollable Table Container -->
     <div id="data-container">
         <input type="text" id="search-bar" placeholder="Search by church name..." />
@@ -96,7 +210,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
         // Initialize the map
-        const map = L.map('map').setView([42.3601, -71.0589], 13); // Boston center
+        const map = L.map('map-container').setView([42.3601, -71.0589], 13); // Boston center
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
@@ -129,6 +243,35 @@
                 tableBody.appendChild(tableRow);
             });
         };
+
+        // Function to populate the calendar with church meeting times
+        const populateCalendar = () => {
+                    const dayColumns = document.querySelectorAll('.day-column');
+
+                    // Clear previous events
+                    dayColumns.forEach(column => (column.innerHTML = ''));
+
+                    // Iterate through church data and place events
+                    churchData.forEach(church => {
+                        if (church.meetingDay && church.startTime && church.endTime) {
+                            const dayIndex = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(church.meetingDay);
+                            if (dayIndex !== -1) {
+                                const startTime = parseInt(church.startTime.split(':')[0]);
+                                const endTime = parseInt(church.endTime.split(':')[0]);
+
+                                // Create event card
+                                const eventCard = document.createElement('div');
+                                eventCard.classList.add('event-card');
+                                eventCard.style.top = `${(startTime - 8) * 50}px`;
+                                eventCard.style.height = `${(endTime - startTime) * 50}px`;
+                                eventCard.innerText = church.name;
+
+                                // Add event card to appropriate day column
+                                dayColumns[dayIndex].appendChild(eventCard);
+                            }
+                        }
+                    });
+                };
 
         // Load churches data from CSV
         const csvFilePath = 'churches.csv'; // Path to your CSV file
@@ -166,8 +309,9 @@
                     }
                 });
 
-                // Populate the table initially with all data
+                // Populate the table and the calendar initially with all data
                 populateTable();
+                populateCalendar();
             },
             error: (error) => {
                 console.error('Error loading CSV:', error);
@@ -180,6 +324,23 @@
             const searchTerm = searchBar.value;
             populateTable(searchTerm);
         });
+        
+        // Toggle between map and calendar views
+        document.getElementById('toggle-view-btn').addEventListener('click', () => {
+            const mapContainer = document.getElementById('map-container');
+            const calendarContainer = document.getElementById('calendar-container');
+
+            if (mapContainer.style.display === 'none') {
+                mapContainer.style.display = 'block';
+                calendarContainer.style.display = 'none';
+                map.invalidateSize(); // Ensure the map is resized correctly
+            } else {
+                mapContainer.style.display = 'none';
+                calendarContainer.style.display = 'block';
+            }
+        });
+
+
     </script>
 </body>
 </html>
